@@ -1,32 +1,23 @@
-import time
-import requests
-
-class NetworkError(Exception):
+class GameException(Exception):
     pass
 
-class Retry:
-    def __init__(self, retries=3, delay=1, backoff=2):
-        self.retries = retries
-        self.delay = delay
-        self.backoff = backoff
+class InputLatencyException(GameException):
+    def __init__(self, message="Input latency too high."):
+        self.message = message
+        super().__init__(self.message)
 
-    def __call__(self, func):
-        def wrapper(*args, **kwargs):
-            attempts = 0
-            while attempts < self.retries:
-                try:
-                    return func(*args, **kwargs)
-                except requests.exceptions.RequestException:
-                    attempts += 1
-                    if attempts < self.retries:
-                        time.sleep(self.delay)
-                        self.delay *= self.backoff
-                    else:
-                        raise NetworkError('Max retries exceeded')
-        return wrapper
+class ConnectionTimeoutException(GameException):
+    def __init__(self, message="Connection timed out."):
+        self.message = message
+        super().__init__(self.message)
 
-@Retry(retries=5, delay=2)
-def fetch_data(url):
-    response = requests.get(url)
-    response.raise_for_status()
-    return response.json()
+class InvalidInputException(GameException):
+    def __init__(self, message="Invalid input provided."):
+        self.message = message
+        super().__init__(self.message)
+
+class UnsupportedGameModeException(GameException):
+    def __init__(self, mode, message="Unsupported game mode."):
+        self.mode = mode
+        self.message = f"{message} Mode: {mode}"
+        super().__init__(self.message)
