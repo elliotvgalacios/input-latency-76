@@ -1,21 +1,30 @@
-from typing import Dict, Any
+import time
+import numpy as np
 
-class InputHandler:
-    def __init__(self) -> None:
-        self.data: Dict[str, Any] = {}
+def calculate_average_latency(latencies):
+    return np.mean(latencies)
 
-    def update_input(self, input_id: str, value: Any) -> None:
-        """Update the input with a new value."""
-        self.data[input_id] = value
 
-    def get_input(self, input_id: str) -> Any:
-        """Retrieve the value of the specified input."""
-        return self.data.get(input_id, None)
+def is_latency_normal(latency, threshold=50):
+    return latency <= threshold
 
-    def clear_inputs(self) -> None:
-        """Clear all stored inputs."""
-        self.data.clear()
 
-    def __str__(self) -> str:
-        """String representation of the input data."""
-        return str(self.data)
+def record_latency(latencies, new_latency):
+    latencies.append(new_latency)
+    if len(latencies) > 100:
+        latencies.pop(0)
+
+
+def calculate_variance(latencies):
+    average = calculate_average_latency(latencies)
+    variance = np.mean([(x - average) ** 2 for x in latencies])
+    return variance
+
+
+def format_latency(latency):
+    return f'{latency:.2f} ms'
+
+
+def log_latencies(latencies):
+    for latency in latencies:
+        print(format_latency(latency))
