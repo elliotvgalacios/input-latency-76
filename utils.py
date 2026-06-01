@@ -1,21 +1,31 @@
-import time
-import requests
+import json
 
-def retry_request(url, retries=3, delay=2):
-    for attempt in range(retries):
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            if attempt < retries - 1:
-                time.sleep(delay)
-            else:
-                raise e
+class GameData:
+    def __init__(self, player_name, score, level):
+        self.player_name = player_name
+        self.score = score
+        self.level = level
 
-if __name__ == '__main__':
-    try:
-        data = retry_request('https://api.example.com/data')
-        print(data)
-    except Exception as e:
-        print(f'Error occurred: {e}')
+    def to_dict(self):
+        return {
+            'player_name': self.player_name,
+            'score': self.score,
+            'level': self.level
+        }
+
+    @staticmethod
+    def from_dict(data):
+        return GameData(
+            player_name=data['player_name'],
+            score=data['score'],
+            level=data['level']
+        )
+
+def save_game_data(file_path, game_data):
+    with open(file_path, 'w') as f:
+        json.dump(game_data.to_dict(), f)
+
+def load_game_data(file_path):
+    with open(file_path, 'r') as f:
+        data = json.load(f)
+        return GameData.from_dict(data)
